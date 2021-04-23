@@ -1,15 +1,16 @@
 import math
 import numpy as np
 import scipy
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 import random
 import time
 import os
 import scipy.io
 from math import log
-from scipy.misc import imsave, imread, imresize
+from imageio import imsave, imread
 from datetime import datetime
 
+tf.disable_v2_behavior()
 
 def weight_variable(shape, name=None):
     initial = tf.truncated_normal(shape, stddev=0.001)
@@ -66,7 +67,7 @@ def psnr(cost):
 def batch_files(folder_path, image_files, batch_size):
     print("batch_files")
     nb_images = len(image_files)
-    img = imread(folder_path+"/"+image_files[0], mode='RGB')
+    img = imread(folder_path+"/"+image_files[0])
     print(folder_path+"/"+image_files[0])
     image_shape = img.shape
     for start_idx in range(0,nb_images,batch_size):
@@ -75,7 +76,7 @@ def batch_files(folder_path, image_files, batch_size):
         images = np.zeros((current_batch_size,) + image_shape)
         for i in range(0,current_batch_size):
             print(folder_path+"/"+image_files[start_idx+i])
-            img = imread(folder_path+"/"+image_files[start_idx+i], mode='RGB')
+            img = imread(folder_path+"/"+image_files[start_idx+i])
             images[i] = img.astype('float32')/255.
 
         yield (filesnames, images)
@@ -117,7 +118,8 @@ class TSNet():
 
     def deinterlace(self, args):
         img_path = args.img_path
-        img = imread(img_path, mode='RGB')
+        output_path = args.output_path
+        img = imread(img_path)
         img = img.astype('float32') / 255.
         img_height, img_width, img_nchannels = img.shape
 
@@ -154,5 +156,5 @@ class TSNet():
         input_filename = os.path.split(args.img_path)
         input_filename = os.path.splitext(input_filename[1])
 
-        imsave("results/"+input_filename[0]+"_0" + input_filename[1], im1)
-        imsave("results/"+input_filename[0]+"_1" + input_filename[1], im2)
+        imsave(os.path.join(output_path,input_filename[0]+"_0" + input_filename[1]), im1)
+        imsave(os.path.join(output_path,input_filename[0]+"_1" + input_filename[1]), im2)
