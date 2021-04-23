@@ -10,16 +10,18 @@ from math import log
 from imageio import imsave, imread
 from datetime import datetime
 
+# Needed to work with placeholder
+tf.compat.v1.disable_eager_execution()
 
 def weight_variable(shape, name=None):
-    initial = tf.truncated_normal(shape, stddev=0.001)
+    initial = tf.random.truncated_normal(shape, stddev=0.001)
     return tf.Variable(initial, name=name)
 def conv2d(x, W, strides=[1, 1, 1, 1], p='SAME', name=None):
     assert isinstance(x, tf.Tensor)
-    return tf.nn.conv2d(x, W, strides=strides, padding=p, name=name)
+    return tf.nn.conv2d(input=x, filters=W, strides=strides, padding=p, name=name)
 def batch_norm(x):
     assert isinstance(x, tf.Tensor)
-    mean, var = tf.nn.moments(x, axes=[1, 2, 3])
+    mean, var = tf.nn.moments(x=x, axes=[1, 2, 3])
     return tf.nn.batch_normalization(x, mean, var, 0, 1, 1e-5)
 def relu(x):
     assert isinstance(x, tf.Tensor)
@@ -31,7 +33,7 @@ def deconv2d(x, W, strides=[1, 1, 1, 1], p='SAME', name=None):
     return tf.nn.conv2d_transpose(x, W, [b, strides[1]*h, strides[1]*w, c], strides=strides, padding=p, name=name)
 def max_pool_2x2(x):
     assert isinstance(x, tf.Tensor)
-    return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
+    return tf.nn.max_pool2d(input=x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 def vupscale(x, upfield=True):
 
     sh = x.get_shape().as_list()
@@ -117,6 +119,7 @@ class TSNet():
 
     def deinterlace(self, args):
         img_path = args.img_path
+        output_path = args.output_path
         img = imread(img_path)
         img = img.astype('float32') / 255.
         img_height, img_width, img_nchannels = img.shape
@@ -133,12 +136,12 @@ class TSNet():
         else:
             device_ = '/cpu:0'
         with tf.device(device_):
-            x = tf.placeholder(tf.float32, shape=[3, img_height, img_width, 1])
+            x = tf.compat.v1.placeholder(tf.float32, shape=[3, img_height, img_width, 1])
             y,z,y_full, z_full = self.createNet(x)
             s_time = time.time()
-        with tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=True)) as sess:
+        with tf.compat.v1.Session(config=tf.compat.v1.ConfigProto(allow_soft_placement=True, log_device_placement=True)) as sess:
             # Restore variables from disk.
-            saver = tf.train.Saver()
+            saver = tf.compat.v1.train.Saver()
             saver.restore(sess, args.model)
             print("Model restored.")
             lower, upper = sess.run([y,z], feed_dict={x: input})
@@ -154,5 +157,5 @@ class TSNet():
         input_filename = os.path.split(args.img_path)
         input_filename = os.path.splitext(input_filename[1])
 
-        imsave("results/"+input_filename[0]+"_0" + input_filename[1], im1)
-        imsave("results/"+input_filename[0]+"_1" + input_filename[1], im2)
+        imsave(os.path.join(output_path, input_filename[0]+"_0" + input_filename[1]), im1)
+        imsave(os.path.join(output_path, input_filename[0]+"_1" + input_filename[1]), im2)

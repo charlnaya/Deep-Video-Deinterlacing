@@ -1,0 +1,27 @@
+TensorFlow 2.0 Upgrade Script
+-----------------------------
+Converted 1 files
+Detected 0 issues that require attention
+--------------------------------------------------------------------------------
+================================================================================
+Detailed log follows:
+
+================================================================================
+--------------------------------------------------------------------------------
+Processing file 'TSNet.py'
+ outputting to 'TSNet_v2.py'
+--------------------------------------------------------------------------------
+
+15:14: INFO: Renamed 'tf.truncated_normal' to 'tf.random.truncated_normal'
+19:11: INFO: Added keywords to args of function 'tf.nn.conv2d'
+19:11: INFO: Renamed keyword argument for tf.nn.conv2d from filter to filters
+22:16: INFO: Added keywords to args of function 'tf.nn.moments'
+34:11: INFO: Added keywords to args of function 'tf.nn.max_pool'
+34:11: INFO: Renamed keyword argument for tf.nn.max_pool from value to input
+34:11: INFO: Renamed 'tf.nn.max_pool' to 'tf.nn.max_pool2d'
+136:16: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+139:13: INFO: Renamed 'tf.Session' to 'tf.compat.v1.Session'
+139:31: INFO: Renamed 'tf.ConfigProto' to 'tf.compat.v1.ConfigProto'
+141:20: INFO: Renamed 'tf.train.Saver' to 'tf.compat.v1.train.Saver'
+--------------------------------------------------------------------------------
+
